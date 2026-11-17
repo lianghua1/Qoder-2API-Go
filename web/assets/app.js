@@ -39,10 +39,19 @@ const ICONS = {
  * 统计页是命名空间根 /admin，其余页面 key 就是路径去掉 /admin/ 前缀。
  */
 function pageKey(p){
+  const base = adminBase().replace(/^\/+|\/+$/g, '');
   let s = String(p||'').replace(/^\/+|\/+$/g, '');
+  if(base && (s === base || s.startsWith(base + '/'))) s = s.slice(base.length).replace(/^\/+/, '');
   if(s === '' || s === 'admin') return 'stats';
   if(s.startsWith('admin/')) s = s.slice('admin/'.length);
   return s;
+}
+
+/* 反向代理前缀：/qoder/admin/keys → '/qoder'；直接根部署 → ''。
+ * 面板可能被聚合网关挂在子路径下，URL 改写与浏览器历史都需带上此前缀。 */
+function adminBase(){
+  const i = location.pathname.indexOf('/admin');
+  return i > 0 ? location.pathname.slice(0, i) : '';
 }
 
 /* ═══ 页面层注册表：各页脚本调用 PAGE(id, def) 注册自己的成员 ═══ */
@@ -166,7 +175,7 @@ function appShell(){
       this.mobileNav = false; // 移动端点导航后必须收起侧栏，否则遮罩一直盖着内容
       history.replaceState(Object.assign({}, history.state, {scroll: window.scrollY}), '');
       this.view = k;
-      history.pushState({view:k}, '', k === 'stats' ? '/admin' : '/admin/' + k);
+      history.pushState({view:k}, '', adminBase() + (k === 'stats' ? '/admin' : '/admin/' + k));
       this.applyTitle(k);
       window.scrollTo(0, 0);
       this.enter(k);
@@ -271,7 +280,7 @@ function appShell(){
       try{ await this.api('/admin/api/logout',{method:'POST'}); }catch(e){}
       this.loggedIn = false;
       this.resetSession();
-      location.href = '/admin';
+      location.href = adminBase() + '/admin';
     },
   };
 }

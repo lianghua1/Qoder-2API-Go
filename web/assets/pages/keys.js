@@ -7,7 +7,7 @@ PAGE('keys', {
    * 写死 localhost 的示例无法直接复制。面板与 API 同源；经反向代理改变对外域名时
    * 以代理暴露的地址为准（卡片内亦有提示）。
    */
-  get callBase(){ return location.origin + '/v1'; },
+  get callBase(){ return location.origin + adminBase() + '/v1'; },
   get callChat(){ return this.callBase + '/chat/completions'; },
   get callModels(){ return this.callBase + '/models'; },
   /* 示例中的密钥用占位符：真实密钥在上方列表里，避免截图 / 录屏连带泄露 */
